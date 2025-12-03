@@ -1,0 +1,23 @@
+---
+:source:
+  :file: utExecutionAndResults/utUnderTest/test/TEST_func_do_work.c
+  :dirname: utExecutionAndResults/utUnderTest/test
+  :basename: TEST_func_do_work.c
+:successes:
+- :test: testfunc_should_double_the_dependency_value
+  :line: 15
+  :message: ''
+  :unity_test_time: 0
+- :test: testfunc_should_handle_zero
+  :line: 27
+  :message: ''
+  :unity_test_time: 0
+:failures: []
+:ignores: []
+:counts:
+  :total: 2
+  :passed: 2
+  :failed: 0
+  :ignored: 0
+:stdout: []
+:time: 0.01096240900005796

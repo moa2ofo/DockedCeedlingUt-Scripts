@@ -1,4 +1,4 @@
-#include "func.h"
+#include "func_do_work.h"
 #include "dependency.h"   // external dependency we will mock
 
 int func_do_work(void)

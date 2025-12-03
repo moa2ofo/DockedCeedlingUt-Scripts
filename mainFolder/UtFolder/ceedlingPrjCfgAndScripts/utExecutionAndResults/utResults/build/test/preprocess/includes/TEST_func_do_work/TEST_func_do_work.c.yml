@@ -1,0 +1,4 @@
+---
+- utExecutionAndResults/utResults/build/vendor/unity/src/unity.h
+- utExecutionAndResults/utUnderTest/src/func_do_work.h
+- Mockdependency.h
