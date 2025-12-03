@@ -1,0 +1,8 @@
+#include "func.h"
+#include "dependency.h"   // external dependency we will mock
+
+int func_do_work(void)
+{
+    int val = dependency_get_value();
+    return val * 2;
+}
