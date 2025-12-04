@@ -1,6 +1,6 @@
 #ifndef FUNC_H
 #define FUNC_H
 
-int func_do_work(void);
+int monitoring(void);
 
 #endif // FUNC_H

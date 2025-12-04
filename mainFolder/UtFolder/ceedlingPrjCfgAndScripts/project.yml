@@ -20,7 +20,7 @@
 
 
   # tweak the way ceedling handles automatic tasks
-  :build_root: utExecutionAndResults/utResults/build
+  :build_root: utExecutionAndResults/utUnderTest/build
   :test_file_prefix: TEST_
   :default_tasks:
     - test:all

@@ -11,49 +11,32 @@ import sys
 import shutil
 import subprocess
 
-
+UNIT_TEST_COLLECTION = "../utCollection"
+UNIT_TEST_PREFIX = "TEST_"
 UNIT_EXECUTION_FOLDER = "utExecutionAndResults/utUnderTest"
+UNIT_EXECUTION_FOLDER_BUILD = "utExecutionAndResults/utUnderTest/build"
+UNIT_RESULT_FOLDER = "utExecutionAndResults/utResults"
+PROJECT = "project.yml"
 
+# Find the position of the script removing its name and the disk
+SCRIPT_PATH = os.path.abspath(__file__)
+SCRIPT_DIRECTORY_PATH = os.path.dirname(SCRIPT_PATH)
+RELATIVE_PATH = SCRIPT_DIRECTORY_PATH.split(":", 1)[-1].lstrip("\\/")
+NORMALIZED_PATH = RELATIVE_PATH.replace("\\", "/")
 
-# Lista dei file da escludere dalla copia
-EXCLUDED_FILES = {"unity.h", "unity.c", "cmock.c", "cmock.h", "unity_internals.h", "cmock_internals.h"}
+DOCKER_BASE = ["docker", "run", "-it", "--rm","-v", "/c/" + NORMALIZED_PATH + ":/home/dev/project","throwtheswitch/madsciencelab-plugins:latest"]
+CEEDLING_GCOV_ALL = ["ceedling", "gcov:all"]
+CEEDLING_CLEAN = ["ceedling", "clean"]
+
+DOCKER_GCOV_ALL = DOCKER_BASE + CEEDLING_GCOV_ALL
+DOCKER_CLEAN = DOCKER_BASE + CEEDLING_CLEAN
 # ==============================
 # CONFIGURATION & MODULE LIST
 # ==============================
 moduli = [
-	{"nome_modulo": "func11_do_work.c", "nome_funzione": "func11_do_work", "percorso": "../../codeBase/folder/src"},
+	{"nome_modulo": "monitoring.c", "nome_funzione": "monitoring", "percorso": "../../codeBase/src"},
     {"nome_modulo": "func_do_work.c", "nome_funzione": "func_do_work", "percorso": "../../codeBase/src"},
 ]
-
-# ==============================
-# PROJECT STRUCTURE SETUP
-# ==============================
-def setup_project_structure(base_folder, name):
-    """
-    Creates a 'TEST_<name>' directory with 'src' and 'test' subdirectories.
-    """
-    test_folder_path = os.path.join(base_folder, f"TEST_{name}")
-    src_folder = os.path.join(test_folder_path, "src")
-    test_folder = os.path.join(test_folder_path, "test")
-    
-    os.makedirs(src_folder, exist_ok=True)
-    os.makedirs(test_folder, exist_ok=True)
-    
-    c_file_path = os.path.join(src_folder, f"{name}.c")
-    h_file_path = os.path.join(src_folder, f"{name}.h")
-    test_c_file_path = os.path.join(test_folder, f"test_{name}.c")
-
-    if not os.listdir(src_folder):
-        with open(c_file_path, "w", encoding="utf-8") as c_file:
-            c_file.write(f'#include "{name}.h"\n\n/* FUNCTION TO TEST */')
-        with open(h_file_path, "w", encoding="utf-8") as h_file:
-            h_file.write(f"#ifndef {name.upper()}_H\n#define {name.upper()}_H\n\n#endif\n")
-        print(f"✅ Created {c_file_path} and {h_file_path}")
-    
-    if not os.listdir(test_folder):
-        with open(test_c_file_path, "w", encoding="utf-8") as test_file:
-            test_file.write(f'#include "{name}.h"\n\n// Test function\n\n')
-        print(f"✅ Created {test_c_file_path}")
 
 
 # ==============================
@@ -176,7 +159,6 @@ def find_and_extract_function(file_name, function_name, unitPath):
         return f"❌ Error reading file: {e}"
 
 
-
 # ==============================
 # MODIFY FILE AFTER MARKER
 # ==============================
@@ -219,7 +201,7 @@ def copy_folder_contents(src_folder: str, dest_folder: str):
     Copy all files and subdirectories from src_folder into dest_folder.
     Creates dest_folder if it does not exist.
     """
-    print(f"src_folder:{src_folder},dest_folder:{dest_folder}")
+    print(f"Copy data from {src_folder} to {dest_folder}")
     if not os.path.exists(dest_folder):
         os.makedirs(dest_folder)
 
@@ -233,16 +215,35 @@ def copy_folder_contents(src_folder: str, dest_folder: str):
         else:
             # Copy single file
             shutil.copy2(src_path, dest_path)
-# ==============================
-# MAIN EXECUTION
-# ==============================
-def updateUnitUnderTest(selected,argument):
-    if not selected:
-        print(f"No entry found with nome_funzione = {argument}")
+
+def clear_folder(folder_path: str):
+    """
+    Delete all files and subdirectories inside the given folder.
+    The folder itself is preserved.
+    """
+    if not os.path.exists(folder_path):
+        print(f"⚠️ Folder '{folder_path}' does not exist.")
+        return
+
+    for item in os.listdir(folder_path):
+        item_path = os.path.join(folder_path, item)
+        try:
+            if os.path.isfile(item_path) or os.path.islink(item_path):
+                os.remove(item_path)   # delete file or symbolic link
+            elif os.path.isdir(item_path):
+                shutil.rmtree(item_path)  # delete subdirectory recursively
+        except Exception as e:
+            print(f"❌ Error deleting {item_path}: {e}")
+
+    print(f"✅ Folder '{folder_path}' cleared successfully.")
+
+def updateUnitUnderTest(unitMetaData,unitName):
+    if not unitMetaData:
+        print(f"No entry found with nome_funzione = {unitName}")
         sys.exit(1)
 
-    base_directory = "../"
-    for modulo in selected:
+
+    for modulo in unitMetaData:
         module_name   = modulo["nome_modulo"]
         function_name = modulo["nome_funzione"]
         percorso      = modulo["percorso"]
@@ -250,40 +251,65 @@ def updateUnitUnderTest(selected,argument):
         extracted_body = find_and_extract_function(module_name, function_name, percorso)
 
         if extracted_body:
-            # ✅ Creiamo la struttura di progetto se non esiste
-            setup_project_structure(base_directory, function_name)
             modify_file_after_marker(
-                os.path.join(base_directory, f"TEST_{function_name}", "src", f"{function_name}.c"),
+                os.path.join(UNIT_TEST_COLLECTION, f"TEST_{function_name}", "src", f"{function_name}.c"),
                 extracted_body,
             )
-    copy_folder_contents("../TEST_"+argument,UNIT_EXECUTION_FOLDER)
+    clear_folder(UNIT_EXECUTION_FOLDER)
+    copy_folder_contents(UNIT_TEST_COLLECTION +"/"+ UNIT_TEST_PREFIX + unitName, UNIT_EXECUTION_FOLDER)
 
 
 
-def run_ceedling_tests():
-    docker_cmd = [
-        "docker", "run", "-it", "--rm",
-        "-v", "/c/Ceedling/DockedCeedlingUt-Scripts/mainFolder/UtFolder/ceedlingPrjCfgAndScripts:/home/dev/project",
-        "throwtheswitch/madsciencelab-plugins:latest",
-        "ceedling", "test:all"
-    ]
-
+def run_bash_cmd(cmd):
     try:
-        subprocess.run(docker_cmd, check=True)
+        subprocess.run(cmd, check=True)
     except subprocess.CalledProcessError as e:
-        print("❌ Error running Ceedling tests in Docker:", e)
+        print("Ceedling has failed:", e)
     
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python script.py <function_name>")
         sys.exit(1)
+    unitToTest = extract_function_name(sys.argv[1])
+    print(f"You passed the argument: {unitToTest}")
 
-    argument = extract_function_name(sys.argv[1])
-    print(f"You passed the argument: {argument}")
-    # Filter moduli to only those with matching nome_funzione
-    selected = [m for m in moduli if m["nome_funzione"] == argument]
-    updateUnitUnderTest(selected,argument)
-    run_ceedling_tests()
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python script.py <function_name|all>")
+        sys.exit(1)
+
+    unitToTest = extract_function_name(sys.argv[1])
+    print(f"You passed the argument: {unitToTest}")
+
+    if unitToTest == "all":
+        # ✅ Run for all modules in the dictionary
+        for module in moduli:
+            function_name = module["nome_funzione"]
+            print(f"▶ Processing unit: {function_name}")
+            updateUnitUnderTest([module], function_name)
+
+            run_bash_cmd(DOCKER_CLEAN)
+            run_bash_cmd(DOCKER_GCOV_ALL)
+
+            copy_folder_contents(
+                UNIT_EXECUTION_FOLDER_BUILD,
+                os.path.join(UNIT_RESULT_FOLDER, function_name + "Results")
+            )
+    else:
+        # ✅ Run only for the selected unit
+        unitMetaData = [m for m in moduli if m["nome_funzione"] == unitToTest]
+        if not unitMetaData:
+            print(f"❌ No module found for function '{unitToTest}'")
+            sys.exit(1)
+
+        updateUnitUnderTest(unitMetaData, unitToTest)
+        run_bash_cmd(DOCKER_CLEAN)
+        run_bash_cmd(DOCKER_BASE+["ceedling", "gcov:"+unitToTest])
+        copy_folder_contents(
+            UNIT_EXECUTION_FOLDER_BUILD,
+            os.path.join(UNIT_RESULT_FOLDER, unitToTest + "Results")
+        )
+
 
             
    
