@@ -265,18 +265,50 @@ def run_bash_cmd(cmd):
         subprocess.run(cmd, check=True)
     except subprocess.CalledProcessError as e:
         print("Ceedling has failed:", e)
-    
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python script.py <function_name>")
-        sys.exit(1)
-    unitToTest = extract_function_name(sys.argv[1])
-    print(f"You passed the argument: {unitToTest}")
+
+
+def print_help():
+    script_name = os.path.basename(sys.argv[0])
+    help_text = f"""
+Usage:
+  python {script_name} <function_name|all>
+  python {script_name} -h | --help | help
+
+Description:
+  This script:
+    - Extracts the specified C function from the code base
+    - Injects it into the corresponding TEST_<function_name> unit file
+      after the marker: /* FUNCTION TO TEST */
+    - Copies the unit test project into:
+        {UNIT_EXECUTION_FOLDER}
+    - Runs Ceedling inside the Docker container
+    - Collects build and coverage results into:
+        {UNIT_RESULT_FOLDER}
+
+Arguments:
+  function_name        Name of the function to test.
+                       It must match 'nome_funzione' in the 'moduli' dictionary.
+  all                  Run the process for all modules listed in 'moduli'.
+
+Options:
+  -h, --help, help     Show this help message and exit.
+
+Examples:
+  python {script_name} monitoring
+  python {script_name} all
+"""
+    print(help_text.strip())
+
 
 if __name__ == "__main__":
+    # ---- handle missing args / help ----
     if len(sys.argv) < 2:
-        print("Usage: python script.py <function_name|all>")
+        print_help()
         sys.exit(1)
+
+    if sys.argv[1] in ("-h", "--help", "help"):
+        print_help()
+        sys.exit(0)
 
     unitToTest = extract_function_name(sys.argv[1])
     print(f"You passed the argument: {unitToTest}")
@@ -304,12 +336,8 @@ if __name__ == "__main__":
 
         updateUnitUnderTest(unitMetaData, unitToTest)
         run_bash_cmd(DOCKER_CLEAN)
-        run_bash_cmd(DOCKER_BASE+["ceedling", "gcov:"+unitToTest])
+        run_bash_cmd(DOCKER_BASE + ["ceedling", "gcov:" + unitToTest])
         copy_folder_contents(
             UNIT_EXECUTION_FOLDER_BUILD,
             os.path.join(UNIT_RESULT_FOLDER, unitToTest + "Results")
         )
-
-
-            
-   
