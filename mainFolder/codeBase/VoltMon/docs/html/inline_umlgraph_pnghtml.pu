@@ -1,0 +1,50 @@
+@startuml inline_umlgraph_1.png
+start
+:Read voltage_mV;
+:Read thresholds: underOn, underOff, overOn, overOff;
+
+if (state == NORMAL) then (NORMAL)
+  :Reset deactivationTimer;
+  if (voltage_mV <= underOn) then (UV ON)
+      :uvActivationTimer += dt_ms;\novActivationTimer = 0;
+      if (uvActivationTimer >= ActivationTime) then (UV TRIG)
+          :state = UNDERVOLTAGE;\nuvActivationTimer = 0;
+      endif
+  else if (voltage_mV >= overOn) then (OV ON)
+      :ovActivationTimer += dt_ms;\nuvActivationTimer = 0;
+      if (ovActivationTimer >= ActivationTime) then (OV TRIG)
+          :state = OVERVOLTAGE;\novActivationTimer = 0;
+      endif
+  else (NORMAL BAND)
+      :Reset uvActivationTimer and ovActivationTimer;
+  endif
+
+else if (state == UNDERVOLTAGE) then (UV)
+  :Reset activation timers;
+  if (voltage_mV >= underOff) then (RECOVER BAND UV)
+      :deactivationTimer += dt_ms;
+      if (deactivationTimer >= DeactivationTime) then (RECOVER UV)
+          :state = NORMAL;\ndeactivationTimer = 0;
+      endif
+  else (STILL UV)
+      :Reset deactivationTimer;
+  endif
+
+else if (state == OVERVOLTAGE) then (OV)
+  :Reset activation timers;
+  if (voltage_mV <= overOff) then (RECOVER BAND OV)
+      :deactivationTimer += dt_ms;
+      if (deactivationTimer >= DeactivationTime) then (RECOVER OV)
+          :state = NORMAL;\ndeactivationTimer = 0;
+      endif
+  else (STILL OV)
+      :Reset deactivationTimer;
+  endif
+
+else (INVALID)
+  :Reset state and all timers;
+  :state = NORMAL;
+endif
+
+stop
+@enduml

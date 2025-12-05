@@ -1,0 +1,24 @@
+# Nome del progetto
+PROJECT_NAME = "ACSL Doc"
+
+#source files
+INPUT = ./cfg
+INPUT = ./pltf
+
+FILE_PATTERNS = *.c *.h
+
+# Cartella di output della documentazione
+OUTPUT_DIRECTORY = ./docs
+
+
+# Genera documentazione HTML
+GENERATE_HTML = YES
+
+# Abilita dot (necessario per i grafici)
+HAVE_DOT = YES
+
+# Percorso del jar di PlantUML
+PLANTUML_JAR_PATH = C:/Users/MOA2OFO/plantuml/plantuml.jar
+
+# No latex generation
+GENERATE_LATEX = NO
