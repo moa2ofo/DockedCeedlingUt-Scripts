@@ -17,7 +17,7 @@ const uint16_t VoltMon_DeactivationTime_ms=500;    /* es. 500 ms */
 void voltMonRun(uint16_t dt_ms)
 {
 
-    uint16_t voltage_mV = VoltMon_ReadVoltageProject_mV();
+    uint16_t voltage_mV = READ_VOLT_PROJECT_MV;
 
     uint16_t underOn_mV  = VoltMon_GetUnderOn_mV();
     uint16_t underOff_mV = VoltMon_GetUnderOff_mV();

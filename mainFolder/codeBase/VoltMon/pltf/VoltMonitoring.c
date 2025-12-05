@@ -38,7 +38,7 @@ void VoltMon_Init(void)
 void voltMonRun(uint16_t dt_ms)
 {
 
-    uint16_t voltage_mV = VoltMon_GetVoltageFct();
+    uint16_t voltage_mV = READ_VOLT_PROJECT_MV;
 
     uint16_t underOn_mV  = VoltMon_GetUnderOn_mV();
     uint16_t underOff_mV = VoltMon_GetUnderOff_mV();

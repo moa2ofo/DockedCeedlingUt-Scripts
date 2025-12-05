@@ -99,7 +99,7 @@ void VoltMon_Init(void);
  * | Interface                                 | In | Out | Data type | Param | Data factor | Data offset | Data size | Data range   | Data unit |
  * |-------------------------------------------|:--:|:---:|-----------|-------|------------:|------------:|----------:|--------------|-----------|
  * | dt_ms                                     | X  |     | uint16    |   -   |      1      |           0 |         1 | [0, 1000]    | [ms]      |
- * | VoltMon_GetVoltageFct()                   | X  |     | uint16    |   -   |      1      |           0 |         1 | [0, 20000]   | [mV]      |
+ * | READ_VOLT_PROJECT_MV                      | X  |     | uint16    |   -   |      1      |           0 |         1 | [0, 20000]   | [mV]      |
  * | VoltMon_GetUnderOn_mV()                   | X  |     | uint16    |   -   |      1      |           0 |         1 | [0, 20000]   | [mV]      |
  * | VoltMon_GetUnderOff_mV()                  | X  |     | uint16    |   -   |      1      |           0 |         1 | [0, 20000]   | [mV]      |
  * | VoltMon_GetOverOn_mV()                    | X  |     | uint16    |   -   |      1      |           0 |         1 | [0, 20000]   | [mV]      |

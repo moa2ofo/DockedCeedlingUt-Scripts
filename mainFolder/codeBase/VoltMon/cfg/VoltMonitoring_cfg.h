@@ -4,10 +4,7 @@
 #include <stdint.h>
 
 /* Tipo funzione per leggere la tensione (in mV) */
-typedef uint16_t (*VoltMon_GetVoltageFct_t)(void);
-
-/* Puntatore alla funzione di lettura tensione (configurabile per progetto) */
-extern VoltMon_GetVoltageFct_t VoltMon_GetVoltageFct;
+#define READ_VOLT_PROJECT_MV VoltMon_ReadVoltageProject_mV()
 
 /* Parametri di configurazione (tutti in cfg) */
 extern const uint16_t VoltMon_ThresholdUnder_mV;      /* es. 8000 mV  */

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-
+#define READ_VOLT_PROJECT_MV VoltMon_ReadVoltageProject_mV()
 
 /* Parametri di configurazione (tutti in cfg) */
 extern const uint16_t VoltMon_ThresholdUnder_mV;      /* es. 8000 mV  */

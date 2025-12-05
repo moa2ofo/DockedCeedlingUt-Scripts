@@ -12,8 +12,6 @@ const uint16_t VoltMon_DeactivationTime_ms = 500u;
 /* Periodo task di monitoraggio (esempio: 10 ms) */
 const uint16_t VoltMon_TaskPeriod_ms       = 10u;
 
-/* Puntatore alla funzione di lettura tensione (inizializzato qui) */
-VoltMon_GetVoltageFct_t VoltMon_GetVoltageFct = VoltMon_ReadVoltageProject_mV;
 
 /* Implementazione di esempio: qui metterai la vera lettura ADC / HAL */
 uint16_t VoltMon_ReadVoltageProject_mV(void)
